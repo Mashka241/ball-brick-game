@@ -9,17 +9,23 @@ window.onload = () => {
   const PADDLE_DIST_FROM_EDGE = 60
   const BRICK_WIDTH = 100
   const BRICK_HEIGHT = 50
-  const BRICK_COUNT = 8
+  const BRICK_GAP = 2
+  const BRICK_COLS = 8
+  const BRICK_ROWS = 3
 
-  const brickGrid = new Array(BRICK_COUNT).fill(false)
+  const brickGrid = new Array(BRICK_COLS * BRICK_ROWS).fill(false)
 
   const resetBricks = () => {
-    for (var i = 0; i < brickGrid.length; i++) {
+    for (var i = 0; i < (BRICK_COLS * BRICK_ROWS); i++) {
+      // if (Math.random() < 0.5) {
       brickGrid[i] = true
+      // } else {
+      //   brickGrid[i] = false
+      // }
     }
 
     // brickGrid.map(el => !el && true)
-    console.log('reset', brickGrid)
+    brickGrid[3] = false
   }
 
   let ballX = 75
@@ -79,11 +85,14 @@ window.onload = () => {
   }
 
   const drawBricks = () => {
-    console.log('draw bricks', brickGrid)
-    for (let i = 0; i < brickGrid.length; i++) {
-      if (brickGrid[i]) {
-        const x = i * (BRICK_WIDTH)
-        colorRect(x, 0, BRICK_WIDTH - 2, BRICK_HEIGHT, 'blue')
+    for (let k = 0; k < BRICK_ROWS; k++) {
+      for (let i = 0; i < BRICK_COLS; i++) {
+        const arrayIndex = BRICK_COLS * k + i
+        if (brickGrid[arrayIndex]) {
+          const x = i * BRICK_WIDTH
+          const y = k * BRICK_HEIGHT
+          colorRect(x, y, BRICK_WIDTH - BRICK_GAP, BRICK_HEIGHT - BRICK_GAP, 'blue')
+        }
       }
     }
   }
@@ -93,7 +102,9 @@ window.onload = () => {
     colorCircle(ballX, ballY, 10, 'white') // draw ball
     colorRect(paddleX, canvas.height - PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_THICKNESS, 'white') // draw paddle
     drawBricks()
-    colorText(`${mouseX}, ${mouseY}`, mouseX, mouseY, 'white')
+    const mouseBrickCol = mouseX / BRICK_WIDTH
+    const mouseBrickRow = mouseY / BRICK_HEIGHT
+    colorText(`${mouseBrickCol}, ${mouseBrickRow}`, mouseX, mouseY, 'white')
   }
 
   const updateAll = () => {
