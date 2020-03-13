@@ -7,25 +7,25 @@ window.onload = () => {
   const PADDLE_WIDTH = 100
   const PADDLE_THICKNESS = 10
   const PADDLE_DIST_FROM_EDGE = 60
-  const BRICK_WIDTH = 100
-  const BRICK_HEIGHT = 50
+  const BRICK_WIDTH = 80
+  const BRICK_HEIGHT = 20
   const BRICK_GAP = 2
-  const BRICK_COLS = 8
-  const BRICK_ROWS = 3
+  const BRICK_COLS = 10
+  const BRICK_ROWS = 14
 
   const brickGrid = new Array(BRICK_COLS * BRICK_ROWS).fill(false)
 
   const resetBricks = () => {
     for (var i = 0; i < (BRICK_COLS * BRICK_ROWS); i++) {
-      // if (Math.random() < 0.5) {
-      brickGrid[i] = true
-      // } else {
-      //   brickGrid[i] = false
-      // }
+      if (Math.random() < 0.5) {
+        brickGrid[i] = true
+      } else {
+        brickGrid[i] = false
+      }
     }
 
     // brickGrid.map(el => !el && true)
-    brickGrid[3] = false
+    // brickGrid[8] = false
   }
 
   let ballX = 75
@@ -84,10 +84,12 @@ window.onload = () => {
     ctx.fillText(text, textX, textY)
   }
 
+  const rowColToArrayIndex = (col, row) => col + BRICK_COLS * row
+
   const drawBricks = () => {
     for (let k = 0; k < BRICK_ROWS; k++) {
       for (let i = 0; i < BRICK_COLS; i++) {
-        const arrayIndex = BRICK_COLS * k + i
+        const arrayIndex = rowColToArrayIndex(i, k)
         if (brickGrid[arrayIndex]) {
           const x = i * BRICK_WIDTH
           const y = k * BRICK_HEIGHT
@@ -102,9 +104,10 @@ window.onload = () => {
     colorCircle(ballX, ballY, 10, 'white') // draw ball
     colorRect(paddleX, canvas.height - PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_THICKNESS, 'white') // draw paddle
     drawBricks()
-    const mouseBrickCol = mouseX / BRICK_WIDTH
-    const mouseBrickRow = mouseY / BRICK_HEIGHT
-    colorText(`${mouseBrickCol}, ${mouseBrickRow}`, mouseX, mouseY, 'white')
+    const mouseBrickCol = Math.floor(mouseX / BRICK_WIDTH)
+    const mouseBrickRow = Math.floor(mouseY / BRICK_HEIGHT)
+    const brickIndexUnderMouse = rowColToArrayIndex(mouseBrickCol, mouseBrickRow)
+    colorText(`${mouseBrickCol}, ${mouseBrickRow}: ${brickIndexUnderMouse}`, mouseX, mouseY, 'white')
   }
 
   const updateAll = () => {
