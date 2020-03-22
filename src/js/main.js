@@ -17,11 +17,11 @@ window.onload = () => {
 
   const resetBricks = () => {
     for (var i = 0; i < (BRICK_COLS * BRICK_ROWS); i++) {
-      if (Math.random() < 0.5) {
-        brickGrid[i] = true
-      } else {
-        brickGrid[i] = false
-      }
+      // if (Math.random() < 0.5) {
+      brickGrid[i] = true
+      // } else {
+      //   brickGrid[i] = false
+      // }
     }
 
     // brickGrid.map(el => !el && true)
@@ -51,6 +51,18 @@ window.onload = () => {
 
     if (ballY > canvas.height) {
       resetBall()
+    }
+
+    const ballBrickCol = Math.floor(ballX / BRICK_WIDTH)
+    const ballBrickRow = Math.floor(ballY / BRICK_HEIGHT)
+    const brickIndexUnderBall = rowColToArrayIndex(ballBrickCol, ballBrickRow)
+    // colorText(`${mouseBrickCol}, ${mouseBrickRow}: ${brickIndexUnderMouse}`, mouseX, mouseY, 'white')
+
+    if (ballBrickCol >=0 && ballBrickCol < BRICK_COLS && ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS) {
+      if (brickGrid[brickIndexUnderBall]) {
+        brickGrid[brickIndexUnderBall] = false
+        ballSpeedY *= -1
+      }
     }
 
     const paddleTopEdgeY = canvas.height - PADDLE_DIST_FROM_EDGE
@@ -104,10 +116,7 @@ window.onload = () => {
     colorCircle(ballX, ballY, 10, 'white') // draw ball
     colorRect(paddleX, canvas.height - PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_THICKNESS, 'white') // draw paddle
     drawBricks()
-    const mouseBrickCol = Math.floor(mouseX / BRICK_WIDTH)
-    const mouseBrickRow = Math.floor(mouseY / BRICK_HEIGHT)
-    const brickIndexUnderMouse = rowColToArrayIndex(mouseBrickCol, mouseBrickRow)
-    colorText(`${mouseBrickCol}, ${mouseBrickRow}: ${brickIndexUnderMouse}`, mouseX, mouseY, 'white')
+    
   }
 
   const updateAll = () => {
@@ -135,4 +144,5 @@ window.onload = () => {
 
   canvas.addEventListener('mousemove', updateMousePos)
   resetBricks()
+  // resetBall()
 }
