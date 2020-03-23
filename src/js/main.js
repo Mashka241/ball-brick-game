@@ -8,10 +8,10 @@ window.onload = () => {
   const PADDLE_THICKNESS = 10
   const PADDLE_DIST_FROM_EDGE = 60
   const BRICK_WIDTH = 80
-  const BRICK_HEIGHT = 20
+  const BRICK_HEIGHT = 40
   const BRICK_GAP = 2
   const BRICK_COLS = 10
-  const BRICK_ROWS = 14
+  const BRICK_ROWS = 7
 
   const brickGrid = new Array(BRICK_COLS * BRICK_ROWS).fill(false)
 
@@ -37,7 +37,7 @@ window.onload = () => {
   let mouseX = 0
   let mouseY = 0
 
-  const moveAll = () => {
+  const ballMove = () => {
     ballX += ballSpeedX
     ballY += ballSpeedY
 
@@ -52,7 +52,9 @@ window.onload = () => {
     if (ballY > canvas.height) {
       resetBall()
     }
+  }
 
+  const ballBrickHandling = () => {
     const ballBrickCol = Math.floor(ballX / BRICK_WIDTH)
     const ballBrickRow = Math.floor(ballY / BRICK_HEIGHT)
     const brickIndexUnderBall = rowColToArrayIndex(ballBrickCol, ballBrickRow)
@@ -61,10 +63,35 @@ window.onload = () => {
     if (ballBrickCol >=0 && ballBrickCol < BRICK_COLS && ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS) {
       if (brickGrid[brickIndexUnderBall]) {
         brickGrid[brickIndexUnderBall] = false
-        ballSpeedY *= -1
+        const prevBallX = ballX - ballSpeedX
+        const prevBallY = ballY - ballSpeedY
+        const prevBrickCol = Math.floor(prevBallX / BRICK_WIDTH)
+        const prevBrickRow = Math.floor(prevBallY / BRICK_HEIGHT)
+        let bothTestsFailed = true
+
+        if (prevBrickCol !== ballBrickCol) {
+          const adjBrickSide = rowColToArrayIndex(prevBrickCol, ballBrickRow)
+          if (!brickGrid[adjBrickSide]) {
+            ballSpeedX *= -1
+            bothTestsFailed = false
+          }
+        }
+        if (prevBrickRow !== ballBrickRow) {
+          const adjBrickTopBot = rowColToArrayIndex(ballBrickCol, prevBrickRow)
+          if (!brickGrid[adjBrickTopBot]) {
+            ballSpeedY *= -1
+            bothTestsFailed = false
+          }
+        }
+        if (bothTestsFailed) {
+          ballSpeedX *= -1
+          ballSpeedY *= -1
+        }
       }
     }
+  }
 
+  const ballPaddleHandling = () => {
     const paddleTopEdgeY = canvas.height - PADDLE_DIST_FROM_EDGE
     const paddleBottomEdgeY = paddleTopEdgeY + PADDLE_THICKNESS
     const paddleLeftEdgeX = paddleX
@@ -77,6 +104,12 @@ window.onload = () => {
       const ballDistFromPaddleCenterX = ballX - centerOfPaddleX
       ballSpeedX = ballDistFromPaddleCenterX * 0.35
     }
+  }
+
+  const moveAll = () => {
+    ballMove()
+    ballBrickHandling()
+    ballPaddleHandling()
   }
 
   const colorRect = (topLeftX, topLeftY, boxWidth, boxHeight, fillColor) => {
@@ -133,6 +166,11 @@ window.onload = () => {
     mouseY = evt.clientY - rect.top
 
     paddleX = mouseX - PADDLE_WIDTH / 2
+
+    ballX = mouseX
+    ballY = mouseY
+    ballSpeedX = 4
+    ballSpeedY = -4
   }
 
   const resetBall = () => {
