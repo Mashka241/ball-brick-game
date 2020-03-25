@@ -7,17 +7,23 @@ window.onload = () => {
   const PADDLE_THICKNESS = 10
   const PADDLE_DIST_FROM_EDGE = 60
   const BRICK_WIDTH = 80
-  const BRICK_HEIGHT = 40
+  const BRICK_HEIGHT = 20
   const BRICK_GAP = 2
   const BRICK_COLS = 10
-  const BRICK_ROWS = 7
+  const BRICK_ROWS = 14
 
   const brickGrid = new Array(BRICK_COLS * BRICK_ROWS).fill(false)
+  let bricksLeft = 0
 
   const resetBricks = () => {
-    for (var i = 0; i < (BRICK_COLS * BRICK_ROWS); i++) {
+    bricksLeft = 0
+    for (let i = 0; i < 3 * BRICK_COLS; i++) {
+      brickGrid[i] = false
+    }
+    for (let i = (3 * BRICK_COLS); i < (BRICK_COLS * BRICK_ROWS); i++) {
       // if (Math.random() < 0.5) {
       brickGrid[i] = true
+      bricksLeft++
       // } else {
       //   brickGrid[i] = false
       // }
@@ -40,16 +46,30 @@ window.onload = () => {
     ballX += ballSpeedX
     ballY += ballSpeedY
 
-    if (ballX > canvas.width || ballX < 0) {
+    if (ballX < 0 && ballSpeedX < 0.0) {
       ballSpeedX *= -1
     }
 
-    if (ballY < 0) {
+    if (ballX > canvas.width && ballSpeedX > 0.0) {
+      ballSpeedX *= -1
+    }
+
+    if (ballY < 0 && ballSpeedY < 0.0) {
       ballSpeedY *= -1
     }
 
     if (ballY > canvas.height) {
       resetBall()
+      resetBricks()
+    }
+  }
+
+  const isBrickAtColRow = (col, row) => {
+    if (col >=0 && col < BRICK_COLS && row >= 0 && row < BRICK_ROWS) {
+      const brickIndexUnderCoord = rowColToArrayIndex(col, row)
+      return brickGrid[brickIndexUnderCoord]
+    } else {
+      return false
     }
   }
 
@@ -60,8 +80,10 @@ window.onload = () => {
     // colorText(`${mouseBrickCol}, ${mouseBrickRow}: ${brickIndexUnderMouse}`, mouseX, mouseY, 'white')
 
     if (ballBrickCol >=0 && ballBrickCol < BRICK_COLS && ballBrickRow >= 0 && ballBrickRow < BRICK_ROWS) {
-      if (brickGrid[brickIndexUnderBall]) {
+      if (isBrickAtColRow(ballBrickCol, ballBrickRow)) {
         brickGrid[brickIndexUnderBall] = false
+        bricksLeft--
+        // console.log(bricksLeft)
         const prevBallX = ballX - ballSpeedX
         const prevBallY = ballY - ballSpeedY
         const prevBrickCol = Math.floor(prevBallX / BRICK_WIDTH)
@@ -69,15 +91,15 @@ window.onload = () => {
         let bothTestsFailed = true
 
         if (prevBrickCol !== ballBrickCol) {
-          const adjBrickSide = rowColToArrayIndex(prevBrickCol, ballBrickRow)
-          if (!brickGrid[adjBrickSide]) {
+          // const adjBrickSide = rowColToArrayIndex(prevBrickCol, ballBrickRow)
+          if (!isBrickAtColRow(prevBrickCol, ballBrickRow)) {
             ballSpeedX *= -1
             bothTestsFailed = false
           }
         }
         if (prevBrickRow !== ballBrickRow) {
-          const adjBrickTopBot = rowColToArrayIndex(ballBrickCol, prevBrickRow)
-          if (!brickGrid[adjBrickTopBot]) {
+          // const adjBrickTopBot = rowColToArrayIndex(ballBrickCol, prevBrickRow)
+          if (!isBrickAtColRow(ballBrickCol, prevBrickRow)) {
             ballSpeedY *= -1
             bothTestsFailed = false
           }
@@ -102,6 +124,10 @@ window.onload = () => {
       const centerOfPaddleX = paddleX + PADDLE_WIDTH / 2
       const ballDistFromPaddleCenterX = ballX - centerOfPaddleX
       ballSpeedX = ballDistFromPaddleCenterX * 0.35
+
+      if (bricksLeft === 0) {
+        resetBricks()
+      }
     }
   }
 
@@ -166,10 +192,10 @@ window.onload = () => {
 
     paddleX = mouseX - PADDLE_WIDTH / 2
 
-    ballX = mouseX
-    ballY = mouseY
-    ballSpeedX = 4
-    ballSpeedY = -4
+    // ballX = mouseX
+    // ballY = mouseY
+    // ballSpeedX = 4
+    // ballSpeedY = -4
   }
 
   const resetBall = () => {
@@ -181,5 +207,5 @@ window.onload = () => {
 
   canvas.addEventListener('mousemove', updateMousePos)
   resetBricks()
-  // resetBall()
+  resetBall()
 }
